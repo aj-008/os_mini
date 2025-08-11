@@ -7,7 +7,7 @@ mov sp, bp
 
 mov bx, REAL_MESSAGE
 call print
-call print_newline
+call print_nl
 
 call load_kernel
 call switch_to_pm
@@ -17,18 +17,18 @@ jmp $
 %include 'boot/print.asm'
 %include 'boot/print_32.asm'
 %include 'boot/print_hex.asm'
-%include 'boot/gdt_32.asm'
-%include 'boot/32bit_switch.asm'
+%include 'boot/gdt.asm'
+%include 'boot/switch_pm.asm'
 %include 'boot/disk.asm'
 
 [bits 16]
 load_kernel:
     mov bx, KERNEL_MESSAGE
     call print
-    call print_newline
+    call print_nl
 
     mov bx, KERNEL_OFFSET
-    mov dh, 2
+    mov dh, 16
     mov dl, [BOOT_DRIVE]
     call disk_load
     ret

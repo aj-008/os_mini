@@ -17,7 +17,7 @@ done:
     ret
 
 
-print_newline:
+print_nl:
     pusha
 
     mov ah, 0x0e
