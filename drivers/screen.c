@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "ports.h"
+#include "../kernel/util.h"
 
 // PRIVATE FUNCTION DECLARATION //
 
@@ -37,7 +38,7 @@ void kprint(char *message) {
 
 
 int print_char(char c, int col, int row, char attribute) {
-    volatile char* video_mem = (volatile char*) VIDEO_ADDRESS;
+    unsigned char* video_mem = (unsigned char*) VIDEO_ADDRESS;
     if (!attribute) {
         attribute = WHITE_ON_BLACK;
     }
@@ -61,6 +62,22 @@ int print_char(char c, int col, int row, char attribute) {
         offset++;
         video_mem[offset] = attribute;
         offset++;
+    }
+    if (offset >= MAX_ROWS * MAX_COLS * 2) {
+        int i;
+        for (i = 1; i < MAX_ROWS; i++) 
+            memory_copy(get_offset(0, i-1) + (char *)VIDEO_ADDRESS,
+                        get_offset(0, i) + (char *)VIDEO_ADDRESS,
+                        MAX_COLS * 2);
+
+        /* Blank last line */
+        char *last_line = get_offset(0, MAX_ROWS-1) + (char *)VIDEO_ADDRESS;
+        for (i = 0; i < MAX_COLS * 2; i++) {
+            last_line[i*2] = ' ';
+            last_line[i*2+1] = 0x07;
+        }
+
+        offset -= 2 * MAX_COLS;
     }
 
     set_cursor_offset(offset);
