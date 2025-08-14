@@ -51,12 +51,12 @@ char *exception_messages[] = {
     "Reserved"
 };
 
-void isr_handler(registers_t *r) {
+void isr_handler(registers_t r) {
     kprint("received interrupt: ");
     char s[3];
-    itoa(r->int_no, s, 10);
+    itoa(r.int_no, s, 10);
     kprint(s);
     kprint("\n");
-    kprint(exception_messages[r->int_no]);
+    kprint(exception_messages[r.int_no]);
     kprint("\n");
 }

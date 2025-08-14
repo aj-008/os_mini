@@ -4,3 +4,5 @@ boot/*.bin
 drivers/*.o
 *.bin
 *.o
+kernel.elf
+
