@@ -4,7 +4,12 @@
 #include "../drivers/ports.h"
 #include "../kernel/util.h"
 
+#define MAX_ISR_ENTRIES 256
+
 extern void *isr_stub_table[];
+extern void *irq_stub_table[];
+
+isr_t interrupt_handlers[MAX_ISR_ENTRIES];
 
 
 void isr_install() {
@@ -82,3 +87,19 @@ void isr_handler(registers_t r) {
     kprint(exception_messages[r.int_no]);
     kprint("\n");
 }
+
+
+void register_interrupt_handler(uint8_t n, isr_t handler) {
+    interrupt_handlers[n] = handler;
+}
+
+void irq_handler(registers_t r) {
+    if (r.int_no >= 40) port_outb(0xA0, 0x20); /* activate slave PIC */
+    port_outb(0x20, 0x20);                     /* activate master PIC always */
+
+    if (interrupt_handlers[r.int_no] != 0) {
+        isr_t handler = interrupt_handlers[r.int_no];
+        handler(r);
+    }}
+
+

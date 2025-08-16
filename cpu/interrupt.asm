@@ -1,6 +1,6 @@
 ; Defined in isr.c
 [extern isr_handler]
-
+[extern irq_handler]
 
 
 global isr_stub_table
@@ -38,7 +38,8 @@ isr_stub_table:
     dd isr30
     dd isr31
 
-global irq_stub_table:
+global irq_stub_table
+irq_stub_table:
     dd irq0
     dd irq1
     dd irq2
@@ -82,12 +83,12 @@ isr_common_stub:
 	iret
 
 
-
+;same as ISR except ebx is popped after call
 irq_common_stub:
 	pusha
-	mov ax, ds ; Lower 16-bits of eax = ds.
-	push eax ; save the data segment descriptor
-	mov ax, 0x10  ; kernel data segment descriptor
+	mov ax, ds
+	push eax
+	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
@@ -161,9 +162,26 @@ ISR_NOERR 31
 global irq%1
 irq%1:
     cli
-    push dword %1            ;check dword versus byte for this and ISR
-    push dword (32 + %1)
+    push byte %1            ;check dword versus byte for this and ISR
+    push byte (32 + %1)
     jmp irq_common_stub
 %endmacro
+
+IRQ 0
+IRQ 1
+IRQ 2
+IRQ 3
+IRQ 4
+IRQ 5
+IRQ 6
+IRQ 7
+IRQ 8
+IRQ 9
+IRQ 10
+IRQ 11
+IRQ 12
+IRQ 13
+IRQ 14
+IRQ 15
 
 
