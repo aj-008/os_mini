@@ -1,13 +1,12 @@
-#include "../drivers/screen.h"
-#include "util.h"
 #include "../cpu/isr.h"
-#include "../cpu/idt.h"
+#include "../cpu/timer.h"
+#include "../drivers/keyboard.h"
+#include "../drivers/screen.h"
 
 void kernel_main() {
-    clear_screen();
-
     isr_install();
-    asm volatile("int $0");
-    asm volatile("int $2");
+    /* Test the interrupts */
+    __asm__ __volatile__("int $0");
+    __asm__ __volatile__("int $3");
 }
 

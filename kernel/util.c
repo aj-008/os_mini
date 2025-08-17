@@ -24,16 +24,24 @@ void itoa(int n, char *str, int base) {
         str[i++] = '-';
     }
     str[i] = '\0';
-    strrev(str, i);
+    str_rev(str);
 }
 
-void strrev(char *target, int length) {
-    for (int i = 0; i < length / 2; i++) {
-        char temp = target[i];
-        target[i] = target[length - i - 1];
-        target[length - i - 1] = temp;
+void str_rev(char *target) {
+    int len = str_len(target) - 1;
+    for (int i = 0; i < len; i++, len--) {
+        char tmp = target[i];
+        target[i] = target[len];
+        target[len] = tmp;
     }
 }
 
-    
+int str_len(char *s) {
+    int n = 0;
+    while (*s != '\0') {
+        s++;
+        n++;
+    }
+    return n;
+}
 

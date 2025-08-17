@@ -3,14 +3,6 @@
 
 #include "types.h"
 
-typedef struct {
-    uint32_t ds;
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    uint32_t int_no, err_code;
-    uint32_t eip, cs, eflags, useresp, ss;
-} registers_t;
-
-
 #define IRQ0 32
 #define IRQ1 33
 #define IRQ2 34
@@ -28,7 +20,13 @@ typedef struct {
 #define IRQ14 46
 #define IRQ15 47
 
- 
+ typedef struct {
+    uint32_t ds;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t int_no, err_code;
+    uint32_t eip, cs, eflags, useresp, ss;
+} registers_t;
+
 void isr_install();
 void isr_handler(registers_t r);
 

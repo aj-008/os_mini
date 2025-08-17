@@ -1,15 +1,16 @@
 #include "isr.h"
 #include "idt.h"
+#include "types.h"
 #include "../drivers/screen.h"
 #include "../drivers/ports.h"
 #include "../kernel/util.h"
 
-#define MAX_ISR_ENTRIES 256
+#define ISR_ENTRIES 256
 
 extern void *isr_stub_table[];
 extern void *irq_stub_table[];
 
-isr_t interrupt_handlers[MAX_ISR_ENTRIES];
+isr_t interrupt_handlers[ISR_ENTRIES];
 
 
 void isr_install() {
@@ -18,7 +19,7 @@ void isr_install() {
     }
 
     pic_remap();
-    for (int i = 37; i < 47; i++) {
+    for (int i = 32; i < 47; i++) {
         set_idt_gate(i, (uint32_t)irq_stub_table[i]);
     }
 
@@ -79,12 +80,13 @@ char *exception_messages[] = {
 };
 
 void isr_handler(registers_t r) {
+    uint32_t int_no = r.int_no;
     kprint("received interrupt: ");
-    char s[3];
-    itoa(r.int_no, s, 10);
+    char s[4];
+    itoa(int_no, s, 10);
     kprint(s);
     kprint("\n");
-    kprint(exception_messages[r.int_no]);
+    kprint(exception_messages[int_no]);
     kprint("\n");
 }
 
@@ -100,6 +102,9 @@ void irq_handler(registers_t r) {
     if (interrupt_handlers[r.int_no] != 0) {
         isr_t handler = interrupt_handlers[r.int_no];
         handler(r);
-    }}
+    }
+}
+
+
 
 

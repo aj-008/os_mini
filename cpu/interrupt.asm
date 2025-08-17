@@ -97,14 +97,13 @@ irq_common_stub:
 	call irq_handler
 	
 	pop ebx 
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
+	mov ds, bx
+	mov es, bx
+	mov fs, bx
+	mov gs, bx
 	popa
 	add esp, 8
-	sti
-	iret
+	iretd
 
 
 %macro ISR_NOERR 1
@@ -162,8 +161,8 @@ ISR_NOERR 31
 global irq%1
 irq%1:
     cli
-    push byte %1            ;check dword versus byte for this and ISR
-    push byte (32 + %1)
+    push dword %1            ;check dword versus byte for this and ISR
+    push dword (32 + %1)
     jmp irq_common_stub
 %endmacro
 
