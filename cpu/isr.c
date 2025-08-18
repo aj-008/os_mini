@@ -1,26 +1,25 @@
 #include "isr.h"
 #include "idt.h"
-#include "types.h"
 #include "../drivers/screen.h"
 #include "../drivers/ports.h"
 #include "../kernel/util.h"
 
-#define ISR_ENTRIES 256
+extern void* isr_stub_table[];
+extern void* irq_stub_table[];
 
-extern void *isr_stub_table[];
-extern void *irq_stub_table[];
 
-isr_t interrupt_handlers[ISR_ENTRIES];
-
+/* set of handler function addresses (function pointers) */
+isr_t interrupt_handlers[256];
 
 void isr_install() {
-    for (int i = 0; i < 32; i++) {
+    for (uint8_t i = 0; i < 32; i++) {
         set_idt_gate(i, (uint32_t)isr_stub_table[i]);
     }
 
     pic_remap();
-    for (int i = 32; i < 47; i++) {
-        set_idt_gate(i, (uint32_t)irq_stub_table[i]);
+
+    for (uint8_t i = 0; i < 16; i++) {
+        set_idt_gate(32 + i, (uint32_t)irq_stub_table[i]);
     }
 
     set_idt();
@@ -38,8 +37,6 @@ void pic_remap() {
     port_outb(0x21, 0x0);
     port_outb(0xA1, 0x0); 
 }
-
-
 
 char *exception_messages[] = {
     "Division By Zero",
@@ -79,32 +76,26 @@ char *exception_messages[] = {
     "Reserved"
 };
 
-void isr_handler(registers_t r) {
-    uint32_t int_no = r.int_no;
+void isr_handler(registers_t *r) {
     kprint("received interrupt: ");
-    char s[4];
-    itoa(int_no, s, 10);
+    char s[16];
+    itoa(r->int_no, s, 10);
     kprint(s);
     kprint("\n");
-    kprint(exception_messages[int_no]);
+    kprint(exception_messages[r->int_no]);
     kprint("\n");
 }
-
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
 }
 
-void irq_handler(registers_t r) {
-    if (r.int_no >= 40) port_outb(0xA0, 0x20); /* activate slave PIC */
-    port_outb(0x20, 0x20);                     /* activate master PIC always */
 
-    if (interrupt_handlers[r.int_no] != 0) {
-        isr_t handler = interrupt_handlers[r.int_no];
-        handler(r);
+void irq_handler(registers_t *r) {
+    if (r->int_no >= 40) port_outb(0xA0, 0x20);
+    port_outb(0x20, 0x20);
+
+    if (interrupt_handlers[r->int_no] != 0) { 
+        interrupt_handlers[r->int_no](r);
     }
 }
-
-
-
-

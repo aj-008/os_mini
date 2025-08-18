@@ -7,23 +7,16 @@ void memory_copy(char *target, const char *source, int length) {
 }
 
 void itoa(int n, char *str, int base) {
-    int sign, i;
-    if ((sign = n) < 0) {
-        n = -n;
-    }
+    int i, sign;
+    if ((sign = n) < 0) n = -n;
     i = 0;
     do {
-        int digit = n % base;
-        if (digit < 10) {
-            str[i++] = digit + '0';
-        } else {
-            str[i++] = digit - 10 + 'A';
-        }
-    } while ((n /= base) > 0);
-    if (sign < 0 && base == 10) {
-        str[i++] = '-';
-    }
+        str[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+
+    if (sign < 0) str[i++] = '-';
     str[i] = '\0';
+
     str_rev(str);
 }
 

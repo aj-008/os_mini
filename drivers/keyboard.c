@@ -1,27 +1,28 @@
-#include "../kernel/util.h"
 #include "keyboard.h"
-#include "ports.h"
-#include "screen.h"
+#include "isr.h"
+#include "../kernel/util.h"
+#include "../drivers/ports.h"
+#include "../drivers/screen.h"
 
-void init_keyboard() {
-   register_interrupt_handler(IRQ1, keyboard_callback); 
-}
-
-static void keyboard_callback(registers_t r) {
+static void keyboard_callback(registers_t *regs) {
+    /* The PIC leaves us the scancode in port 0x60 */
     uint8_t scancode = port_inb(0x60);
-    char *sc_a;
-    itoa(scancode, sc_a, 10);
-    kprint(sc_a);
+    char *sc_ascii;
+    itoa(scancode, sc_ascii, 10);
+    kprint("Keyboard scancode: ");
+    kprint(sc_ascii);
     kprint(", ");
     print_letter(scancode);
     kprint("\n");
 }
 
+void init_keyboard() {
+    register_interrupt_handler(IRQ1, keyboard_callback);
+}
 
-/* there is absolutely a way to do this with defines / enums that is not this silly */
 
-void print_letter(uint8_t sc) {
-    switch (sc) {
+void print_letter(uint8_t scancode) {
+    switch (scancode) {
         case 0x0:
             kprint("ERROR");
             break;
@@ -200,11 +201,11 @@ void print_letter(uint8_t sc) {
             /* 'keuyp' event corresponds to the 'keydown' + 0x80 
              * it may still be a scancode we haven't implemented yet, or
              * maybe a control/escape sequence */
-            if (sc <= 0x7f) {
+            if (scancode <= 0x7f) {
                 kprint("Unknown key down");
-            } else if (sc <= 0x39 + 0x80) {
+            } else if (scancode <= 0x39 + 0x80) {
                 kprint("key up ");
-                print_letter(sc - 0x80);
+                print_letter(scancode - 0x80);
             } else kprint("Unknown key up");
             break;
     }
