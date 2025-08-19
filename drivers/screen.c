@@ -1,6 +1,6 @@
 #include "screen.h"
-#include "ports.h"
-#include "../kernel/util.h"
+#include "../cpu/ports.h"
+#include "../libc/memory.h"
 
 // PRIVATE FUNCTION DECLARATION //
 
@@ -33,6 +33,13 @@ void kprint(char *message) {
     kprint_at(message, -1, -1);
 }
 
+void kprint_backspace() {
+    int offset = get_cursor_offset()-2;
+    int row = get_offset_row(offset);
+    int col = get_offset_col(offset);
+    print_char(0x08, col, row, WHITE_ON_BLACK);
+}
+
 
 // PRIVATE FUNCTIONS //
 
@@ -50,6 +57,9 @@ int print_char(char c, int col, int row, char attribute) {
     int offset;
     if (col >=0 && row >=0) {
         offset = get_offset(col, row);
+    } else if (c == 0x08) { /* Backspace */
+        video_mem[offset] = ' ';
+        video_mem[offset+1] = attribute;
     } else {
         offset = get_cursor_offset();
     }

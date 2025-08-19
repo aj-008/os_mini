@@ -1,8 +1,10 @@
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/screen.h"
-#include "../drivers/ports.h"
-#include "../kernel/util.h"
+#include "ports.h"
+#include "../libc/string.h"
+#include "../drivers/keyboard.h"
+#include "timer.h"
 
 extern void* isr_stub_table[];
 extern void* irq_stub_table[];
@@ -23,6 +25,12 @@ void isr_install() {
     }
 
     set_idt();
+}
+
+void irq_install() {
+    asm volatile("sti");
+    init_timer(50);
+    init_keyboard();
 }
 
 void pic_remap() {
