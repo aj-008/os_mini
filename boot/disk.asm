@@ -1,4 +1,3 @@
-
 disk_load:
     pusha
     push dx
