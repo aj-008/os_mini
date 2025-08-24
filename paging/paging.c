@@ -25,7 +25,6 @@ uint32_t translate_address(uint32_t addr) {
     uint32_t PDE = page_directory[dir_ind];
     uint32_t *PT = (uint32_t *)(PDE & 0xfffff000);
     uint32_t PTE = PT[table_ind];
-
     
     return (PTE & 0xfffff000) + offset;
 }
