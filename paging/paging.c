@@ -1,11 +1,14 @@
 #include "paging.h"
+#include "../drivers/screen.h"
+#include "../libc/string.h"
 
-extern void enable_paging();
+extern void enable_paging(uint32_t *page_directory_address);
 
 uint32_t page_directory[1024]__attribute__((aligned(4096)));
 uint32_t first_page_table[1024]__attribute__((aligned(4096)));
 
 void set_page_tables() {
+
     for (int i = 0; i < 1024; i++) {
         page_directory[i] = 0x00000002;        
     }
@@ -14,9 +17,16 @@ void set_page_tables() {
     }
     page_directory[0] = (unsigned int)first_page_table | 0x03;
 
-    enable_paging();
+    enable_paging(page_directory);
 }
 
+
+
+
+
+/* translate_address
+ * Returns physical address of addr
+ */
 uint32_t translate_address(uint32_t addr) {
     uint32_t dir_ind = (addr >> 22) & 0x3ff;
     uint32_t table_ind = (addr >> 12) & 0x3ff;

@@ -1,10 +1,13 @@
 global enable_paging
-extern page_directory
 
 enable_paging:
-    mov eax, page_directory  ; load page directory address
-    mov cr3, eax             ; set CR3
+    push ebp
+    mov ebp, esp
+    mov eax, [esp + 8]
+    mov cr3, eax             ; Load directory address
     mov eax, cr0
-    or eax, 0x80000000       ; set PG bit
+    or eax, 0x80000000       ; Set PG bit
     mov cr0, eax
+    mov esp, ebp
+    pop ebp
     ret

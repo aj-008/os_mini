@@ -8,10 +8,10 @@ void kernel_main() {
     clear_screen();
     isr_install();
     irq_install();
-    /*set_page_tables();
-    uint32_t x = translate_address(0x111);*/
+    set_page_tables();
+    uint32_t x = translate_address(0x111);
     char s[1000];
-    itoa(15, s, 2);
+    itoa(x, s, 16);
     kprint(s);
 }
 
