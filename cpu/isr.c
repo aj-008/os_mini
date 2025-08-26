@@ -6,12 +6,20 @@
 #include "../drivers/keyboard.h"
 #include "timer.h"
 
+
+/* Stubs declared in interrupt.asm, 
+ * contain list of addresses to be assigned functions
+ */
 extern void* isr_stub_table[];
 extern void* irq_stub_table[];
 
 
-/* set of handler function addresses (function pointers) */
+/* Set of handler function addresses (function pointers)
+ * -- void (*isr_t)(registers_t *) --
+ */
 isr_t interrupt_handlers[256];
+
+
 
 void isr_install() {
     for (uint8_t i = 0; i < 32; i++) {
@@ -46,7 +54,7 @@ void pic_remap() {
     port_outb(0xA1, 0x0); 
 }
 
-char *exception_messages[] = {
+const char *exception_messages[] = {
     "Division By Zero",
     "Debug",
     "Non Maskable Interrupt",
@@ -90,6 +98,7 @@ void isr_handler(registers_t *r) {
     itoa(r->int_no, s, 10);
     kprint(s);
     kprint("\n");
+    kprint(exception_messages[1]);
     kprint(exception_messages[r->int_no]);
     kprint("\n");
 }

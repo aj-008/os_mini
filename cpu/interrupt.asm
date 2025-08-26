@@ -9,7 +9,7 @@ global irq_stub_table
 
 isr_common_stub:
     ; 1. Save CPU state
-	pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+	pusha
 	mov ax, ds ; Lower 16-bits of eax = ds.
 	push eax ; save the data segment descriptor
 	mov ax, 0x10  ; kernel data segment descriptor
@@ -133,7 +133,7 @@ irq_stub_table:
 %macro irq 1
 irq%1:
     cli
-    push dword (32 + %1)   ; vector number
+    push dword (32 + %1)
     jmp irq_common_stub
 %endmacro
 

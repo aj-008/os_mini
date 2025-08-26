@@ -1,35 +1,67 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c libc/*.c paging/*.c)
-HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h libc/*.h paging/*.h)
-OBJ = ${C_SOURCES:.c=.o cpu/interrupt.o paging/enable_paging.o}
+# Toolchain
+CC := i386-elf-gcc
+LD := i386-elf-ld
+AS := nasm
+OBJCOPY := objcopy
+GDB := gdb
+GRUB_MKRESCUE := grub-mkrescue
+QEMU := qemu-system-i386
 
-CC = /usr/bin/x86_64-elf-gcc
-GDB = /usr/bin/gdb
+# Flags
+CFLAGS := -m32 -ffreestanding -Wall -Wextra -O0 -g
+ASMFLAGS := -f elf32
+LDFLAGS := -m elf_i386 -T linker.ld
 
-CFLAGS = -g -m32 -ffreestanding
+# Kernel ELF
+KERNEL := kernel.elf
+ISO_DIR := iso/boot
+ISO_IMG := os.iso
 
+# Sources
+ASM_SRCS := mbh.asm cpu/interrupt.asm paging/enable_paging.asm
+C_SRCS := $(wildcard */*.c) $(wildcard *.c)
+C_SRCS := $(filter-out boot/%,$(C_SRCS))  # optional
 
-os-image.bin: boot/boot_sector.bin kernel.bin
-	cat $^ > os-image.bin
+# Objects (same directory as sources)
+OBJ := $(patsubst %.c,%.o,$(C_SRCS)) $(patsubst %.asm,%.o,$(ASM_SRCS))
+MBH_OBJ := mbh.o
 
-kernel.bin: boot/kernel_entry.o ${OBJ}
-	x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
+.PHONY: all clean iso run qemu-gdb gdb
 
-kernel.elf: boot/kernel_entry.o ${OBJ}
-	x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^
+all: $(KERNEL)
 
-run: os-image.bin
-	qemu-system-i386 -s -fda os-image.bin & ${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+# Compile C files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.c ${HEADERS}
-	${CC} ${CFLAGS} -c $< -o $@
-
+# Assemble ASM files
 %.o: %.asm
-	nasm $< -f elf32 -o $@
+	$(AS) $(ASMFLAGS) $< -o $@
 
-%.bin: %.asm
-	nasm $< -f bin -o $@
+# Link kernel (mbh.o first)
+$(KERNEL): $(MBH_OBJ) $(filter-out $(MBH_OBJ),$(OBJ)) linker.ld
+	$(LD) $(LDFLAGS) -o $@ $(MBH_OBJ) $(filter-out $(MBH_OBJ),$(OBJ))
+	$(OBJCOPY) -O elf32-i386 $@ $@
 
+# Prepare ISO
+iso: $(KERNEL)
+	@mkdir -p $(ISO_DIR)
+	cp $(KERNEL) $(ISO_DIR)/kernel.elf
+	$(GRUB_MKRESCUE) -o $(ISO_IMG) iso
 
+# Run QEMU
+run: iso
+	$(QEMU) -cdrom $(ISO_IMG) -m 512 -serial stdio
+
+# QEMU with GDB
+qemu-gdb: iso
+	$(QEMU) -cdrom $(ISO_IMG) -m 512 -gdb tcp::1234 -S -no-reboot -serial stdio
+
+# Connect GDB
+gdb: $(KERNEL)
+	$(GDB) -ex "file $(KERNEL)" -ex "set architecture i386" -ex "target remote localhost:1234"
+
+# Clean
 clean:
-	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o paging/*.o
+	rm -f $(OBJ) $(KERNEL) $(ISO_IMG)
+

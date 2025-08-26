@@ -6,7 +6,22 @@ void memory_copy(char *target, const char *source, int length) {
     }
 }
 
-void memory_set(uint8_t *d, uint8_t val, uint32_t len) {
-    uint8_t *tmp = d;
+void memory_set(char *d, char val, uint32_t len) {
+    char *tmp = d;
     for ( ; len != 0; len--) *tmp++ = val;
+}
+
+char *memory_move(char *d, char *s, uint32_t n) {
+    if (d == s || n == 0) return d;
+
+    if (d < s) {
+        for (int i = 0; i < n; i++) {
+            d[i] = s[i];
+        }
+    } else {
+        for (int i = n; i > 0; i--) {
+            d[i - 1] = s[i - 1];
+        }
+    }
+    return d;
 }

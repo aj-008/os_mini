@@ -46,33 +46,31 @@ void kprint_backspace() {
 
 int print_char(char c, int col, int row, char attribute) {
     unsigned char* video_mem = (unsigned char*) VIDEO_ADDRESS;
-    if (!attribute) {
-        attribute = WHITE_ON_BLACK;
-    }
+    if (!attribute) attribute = WHITE_ON_BLACK;
+
     if (col >= MAX_COLS || row >= MAX_ROWS) {
         video_mem[2 * MAX_COLS * MAX_ROWS - 2] = 'E';
         video_mem[2 * MAX_COLS * MAX_ROWS - 1] = RED_ON_WHITE;
         return get_offset(col, row);
     }
+
+
     int offset;
-    if (col >=0 && row >=0) {
-        offset = get_offset(col, row);
+    if (col >= 0 && row >= 0) offset = get_offset(col, row);
+    else offset = get_cursor_offset();
+
+    if (c == '\n') {
+        row = get_offset_row(offset);
+        offset = get_offset(0, row+1);
     } else if (c == 0x08) { /* Backspace */
         video_mem[offset] = ' ';
         video_mem[offset+1] = attribute;
     } else {
-        offset = get_cursor_offset();
+        video_mem[offset] = c;
+        video_mem[offset+1] = attribute;
+        offset += 2;
     }
 
-    if (c == '\n') {
-        row = get_offset_row(offset);
-        offset = get_offset(0, row + 1);
-    } else {
-        video_mem[offset] = c;
-        offset++;
-        video_mem[offset] = attribute;
-        offset++;
-    }
     if (offset >= MAX_ROWS * MAX_COLS * 2) {
         int i;
         for (i = 1; i < MAX_ROWS; i++) 

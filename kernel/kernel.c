@@ -4,15 +4,11 @@
 #include "../libc/string.h"
 #include "../paging/paging.h"
 
-void kernel_main() {
+void kmain() {
     clear_screen();
+    kprint("hello");
     isr_install();
     irq_install();
-    set_page_tables();
-    uint32_t x = translate_address(0x111);
-    char s[1000];
-    itoa(x, s, 16);
-    kprint(s);
 }
 
 void user_input(char *input) {

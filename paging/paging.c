@@ -1,6 +1,4 @@
 #include "paging.h"
-#include "../drivers/screen.h"
-#include "../libc/string.h"
 
 extern void enable_paging(uint32_t *page_directory_address);
 

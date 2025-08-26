@@ -20,12 +20,22 @@
 #define IRQ14 46
 #define IRQ15 47
 
+
+/*
+ * registers_t
+ * This struct gets passed by the ISR asm stub in interrupt.asm and is a param
+ * for every handler function 
+ * 
+ * Notable values: int_no -> contains the interrupt/exception number passed by the ISR/IRQ stub
+ *                 err_code -> is passed by stub or cpu for certain exceptions
+ */
 typedef struct {
-   uint32_t ds; /* Data segment selector */
-   uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; /* Pushed by pusha. */
-   uint32_t int_no, err_code; /* Interrupt number and error code (if applicable) */
-   uint32_t eip, cs, eflags, useresp, ss; /* Pushed by the processor automatically */
+   uint32_t ds; 
+   uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; 
+   uint32_t int_no, err_code; 
+   uint32_t eip, cs, eflags, useresp, ss;
 } registers_t;
+
 
 void isr_install();
 void irq_install();

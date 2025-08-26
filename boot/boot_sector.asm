@@ -46,9 +46,9 @@ BEGIN_PM:
 BOOT_DRIVE:
     db 0
 REAL_MESSAGE:
-    db "hello. we are starting in real mode", 0
+    db "Hello. We are starting in real mode", 0
 PROTECTED_MESSAGE:
-    db "WE MADE IT TO PROT MODE!!", 0
+    db "Protected mode...", 0
 KERNEL_MESSAGE:
     db "Loading kernel into memory...", 0
 
